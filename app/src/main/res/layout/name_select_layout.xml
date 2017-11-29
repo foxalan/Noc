@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_marginTop="30dp"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:id="@+id/ll_music_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    </LinearLayout>
+
+    <ImageView
+        android:src="@drawable/game_line"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <com.example.alan.views.MyGridView
+        android:id="@+id/mygridview"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:horizontalSpacing="2dp"
+        android:numColumns="8"
+        android:verticalSpacing="2dp" >
+        >
+    </com.example.alan.views.MyGridView>
+</LinearLayout>

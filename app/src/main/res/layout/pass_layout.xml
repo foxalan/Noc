@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <FrameLayout
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:src="@drawable/game_level_title"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/tv_passes"
+            android:layout_marginTop="30dp"
+            android:textSize="25dp"
+            android:layout_gravity="center_horizontal"
+            android:text="1"
+            android:textColor="#ffffff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/fl_game_buy"
+        android:layout_alignParentLeft="true"
+        android:layout_centerInParent="true"
+        android:layout_width="70dp"
+        android:layout_height="100dp">
+        <ImageButton
+            android:id="@+id/ib_get_tip"
+            android:background="@drawable/game_buy1_bg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="70dp"
+            android:src="@drawable/game_coin_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp" />
+        <TextView
+            android:textSize="15sp"
+            android:text="30"
+            android:layout_marginLeft="40dp"
+            android:layout_marginTop="70dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp" />
+    </FrameLayout>
+    <FrameLayout
+        android:layout_below="@id/fl_game_buy"
+        android:layout_alignParentLeft="true"
+        android:layout_centerInParent="true"
+        android:layout_width="70dp"
+        android:layout_height="100dp">
+        <ImageButton
+            android:id="@+id/ib_remove_error"
+            android:background="@drawable/game_buy2_bg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="70dp"
+            android:src="@drawable/game_coin_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp" />
+        <TextView
+            android:textSize="15sp"
+            android:text="90"
+            android:layout_marginLeft="40dp"
+            android:layout_marginTop="70dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp" />
+    </FrameLayout>
+    <ImageButton
+        android:id="@+id/ib_share"
+        android:background="@drawable/game_share_bg"
+        android:layout_marginTop="330dp"
+        android:layout_alignParentRight="true"
+        android:layout_width="70dp"
+        android:layout_height="70dp" />
+
+</RelativeLayout>

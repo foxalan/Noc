@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/index_background"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+
+    android:layout_height="match_parent"
+    tools:context="com.example.alan.myapplication.MainActivity">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include layout="@layout/music_title_layout"/>
+        <include layout="@layout/music_disc_layout"/>
+        <include layout="@layout/name_select_layout"/>
+
+    </LinearLayout>
+
+    <include layout="@layout/pass_layout"/>
+
+
+
+
+
+</FrameLayout>
