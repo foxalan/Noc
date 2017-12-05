@@ -19,13 +19,13 @@
             android:text="歌名"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
-    </FrameLayout>m
+    </FrameLayout>
     
     <FrameLayout
         android:layout_marginTop="10dp"
         android:layout_gravity="center"
-        android:layout_width="240dp"
-        android:layout_height="240dp">
+        android:layout_width="220dp"
+        android:layout_height="220dp">
         <ImageView
             android:id="@+id/iv_game_center"
             android:layout_gravity="center"
@@ -47,14 +47,17 @@
             android:id="@+id/ib_game_start"
             android:layout_gravity="center"
             android:background="@drawable/index_set_bg"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-        <ImageView
+            android:layout_width="130dp"
+            android:layout_height="130dp" />
 
+        <ImageView
             android:id="@+id/iv_game_pin"
             android:src="@drawable/game_pin"
             android:layout_gravity="right"
             android:layout_width="60dp"
             android:layout_height="140dp" />
+
     </FrameLayout>
+
+
 </LinearLayout>

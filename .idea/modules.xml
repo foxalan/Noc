@@ -2,9 +2,12 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/GuessMusic.iml" filepath="$PROJECT_DIR$/GuessMusic.iml" />
+      <module fileurl="file://E:\PROJECT\Noc\GuessMusic.iml" filepath="E:\PROJECT\Noc\GuessMusic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Noc.iml" filepath="$PROJECT_DIR$/Noc.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://E:\PROJECT\Noc\app\app.iml" filepath="E:\PROJECT\Noc\app\app.iml" />
       <module fileurl="file://$PROJECT_DIR$/notepad/notepad.iml" filepath="$PROJECT_DIR$/notepad/notepad.iml" />
+      <module fileurl="file://E:\PROJECT\Noc\notepad\notepad.iml" filepath="E:\PROJECT\Noc\notepad\notepad.iml" />
     </modules>
   </component>
 </project>
