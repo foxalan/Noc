@@ -8,13 +8,50 @@ import android.widget.Button;
 
 public class WordButton {
 
-    public boolean isvisable;
-    public String word;
-    public int id;
-    public Button mViewButton;
+    private boolean isvisable;
+    private String word;
+    private int id;
+    private Button mViewButton;
 
     public WordButton(){
-        isvisable = true;
+    }
 
+    public WordButton(boolean isvisable, String word, int id, Button mViewButton) {
+        this.isvisable = isvisable;
+        this.word = word;
+        this.id = id;
+        this.mViewButton = mViewButton;
+    }
+
+    public boolean isIsvisable() {
+        return isvisable;
+    }
+
+    public void setIsvisable(boolean isvisable) {
+        this.isvisable = isvisable;
+    }
+
+    public String getWord() {
+        return word;
+    }
+
+    public void setWord(String word) {
+        this.word = word;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Button getmViewButton() {
+        return mViewButton;
+    }
+
+    public void setmViewButton(Button mViewButton) {
+        this.mViewButton = mViewButton;
     }
 }

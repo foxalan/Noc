@@ -10,8 +10,15 @@ public class Const {
 
         public static final int INDEX_SONG_NAME = 1;
 
+        public static final int COIN_NUMBER = 2000;
+
         public static final String CURRENT_SONG_POSITION = "current_song_position";
         public static final String COIN_SIZE = "coin_size";
+
+        public static final int COIN_TAKE_TIP = 90;
+        public static final int COIN_TAKE_ERROR = 30;
+
+        public static final int TOTAL_WORD_SIZE = 24;
 
         public static final String SONG_INFO[][] = {
                 {"__00000.m4a", "征服"},

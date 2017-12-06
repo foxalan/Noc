@@ -14,6 +14,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -21,10 +22,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.alan.beans.Const;
-import com.example.alan.model.IbuttonListenr;
+import com.example.alan.model.IButtonListener;
 import com.example.alan.model.WordButton;
 import com.example.alan.utils.PreferenceUtil;
-import com.example.alan.views.MyGridView;
+import com.example.alan.views.MyGridViewAdapter;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 
 
-public class MainActivity extends AppCompatActivity implements IbuttonListenr {
+public class MainActivity extends AppCompatActivity implements IButtonListener {
     //关于游戏的动画设置
     private Animation mPanelAnim;
     private Animation mGamePinSetAnim;
@@ -53,17 +54,16 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
     ImageButton ib_game_start;
 
     //设置按钮是否可以被点击
-    private boolean isrunning = false;
+    private boolean isRunning = false;
 
     private List<WordButton> wordButtonList = new ArrayList<>();
     @BindView(R.id.mygridview)
-    MyGridView gridView;
+    GridView gridView;
 
     @BindView(R.id.ll_music_name)
     LinearLayout ll_music_name;
 
     private List<WordButton> wordButtonListName = new ArrayList<>();
-
     private LayoutInflater inflater;
 
     private int currentSongPosition;
@@ -75,7 +75,6 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
     private final static int MUSIC_STATE_RIGHT = 1;
     private final static int MUSIC_STATE_ERROR = 2;
     private final static int MUSIC_STATE_BUG = 3;
-
 
     private final static String COIN_SIZE = "coin_size";
     private final static String PASS_SIZE = "pass_size";
@@ -95,13 +94,14 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
     ImageButton ib_share;
 
     private int coin_number = 2000;
-    private int coin_error = 30;
-    private int coin_tip = 90;
+
 
     private List<Integer> music_id = new ArrayList<>();
     private List<Integer> tip_id = new ArrayList<>();
 
     private Unbinder unbinder;
+
+    private MyGridViewAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,11 +117,17 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
         initData();
         initAnimations();
         initEvents();
-        setGridView();
-        setNameSeclect();
+        setNameSelect();
     }
 
     //初始化数据
+
+    /**
+     * 1.初始化与歌相关的内容
+     * 2.初始化金币数量
+     * 3.初始化所有的文字
+     * 4.初始化
+     */
     private void initData() {
 
         currentSongPosition = PreferenceUtil.getInt(Const.CURRENT_SONG_POSITION, 0);
@@ -129,7 +135,18 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
         songLength = Const.SONG_INFO[currentSongPosition][1].length();
         currentSong = Const.SONG_INFO[currentSongPosition][1];
 
-        coin_number = PreferenceUtil.getInt(Const.COIN_SIZE,2000);
+        coin_number = PreferenceUtil.getInt(Const.COIN_SIZE, Const.COIN_NUMBER);
+
+        String[] word = generateWords();
+        for (int i = 0; i < Const.TOTAL_WORD_SIZE; i++) {
+            WordButton button = new WordButton();
+            button.setId(i);
+            button.setIsvisable(true);
+            button.setWord(word[i]);
+            wordButtonList.add(button);
+        }
+
+
     }
 
     @Override
@@ -158,9 +175,9 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
                 if (iv_game_pin == null) {
                     return;
                 }
-                if (isrunning == false) {
+                if (isRunning == false) {
                     iv_game_pin.startAnimation(mGamePinSetAnim);
-                    isrunning = true;
+                    isRunning = true;
                     ib_game_start.setVisibility(View.INVISIBLE);
                 }
                 break;
@@ -170,33 +187,51 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
 
     private void initEvents() {
 
-        gridView.resigterButtonLister(this);
+        adapter = new MyGridViewAdapter(this,wordButtonList,R.layout.gridview_item);
+        gridView.setAdapter(adapter);
+        adapter.registerButtonListener(this);
+        tv_coins.setText(coin_number + "");
 
-        tv_coins.setText(coin_number+"");
     }
 
+
+    /**
+     * 1.去掉一个错误答案
+     * 2.改变金币数据
+     * 3.改变UI
+     */
     private void remove_error_select() {
 
-//        coin_number = sp_coin_size.getInt(COINS);
-//        sp_coin_size.putInt(COINS, coin_number -= coin_tip);
-//        tv_coins.setText(sp_coin_size.getInt(COINS) + "");
+        if (PreferenceUtil.getInt(Const.COIN_SIZE,2000)<Const.COIN_TAKE_ERROR){
+            Toast.makeText(this,"金币不足",Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if ((tip_id.size() + music_id.size()) == 20) {
+            Toast.makeText(this,"不能再去掉错误的答案了",Toast.LENGTH_LONG).show();
+            return;
+        }
 
         Random random = new Random();
         int error_select = random.nextInt(23);
-        while (!judg_iscrrort(error_select)) {
+        while (!judge_isCorrect(error_select)) {
             error_select = random.nextInt(23);
         }
         tip_id.add(error_select);
 
-        wordButtonList.get(error_select).mViewButton.setVisibility(View.INVISIBLE);
-        wordButtonList.get(error_select).mViewButton.setEnabled(false);
+        mHandler.sendEmptyMessage(MSG_COIN_TEXT);
+
+        wordButtonList.get(error_select).getmViewButton().setVisibility(View.INVISIBLE);
+        wordButtonList.get(error_select).getmViewButton().setEnabled(false);
     }
 
     //判断删除的是正确的歌曲名称和重复
-    private boolean judg_iscrrort(int random) {
+    private boolean judge_isCorrect(int random) {
+
+        music_id.clear();
         for (int i = 0; i < 24; i++) {
             for (int j = 0; j < songLength; j++) {
-                if (wordButtonList.get(i).word.equals(currentSong.substring(j, j + 1))) {
+                if (wordButtonList.get(i).getWord().equals(currentSong.substring(j, j + 1))) {
                     music_id.add(i);
                 }
             }
@@ -273,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                isrunning = false;
+                isRunning = false;
                 ib_game_start.setVisibility(View.VISIBLE);
 
             }
@@ -285,11 +320,10 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
         });
     }
 
-    //刷新数据
-    private void setGridView() {
-        getDates();
-        gridView.reflashAdapter(wordButtonList);
-    }
+//    //刷新数据
+//    private void setGridView() {
+//        adapter.notifyDataSetChanged();
+//    }
 
     @Override
     protected void onPause() {
@@ -298,60 +332,51 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
         iv_game_pin.clearAnimation();
     }
 
-    //获得所有选择文字
-    public void getDates() {
-        String[] word = generateWords();
-        for (int i = 0; i < 24; i++) {
-            WordButton button = new WordButton();
-            button.word = word[i];
-            wordButtonList.add(button);
-        }
-    }
-
     //设置歌名长度
     public void setMusicNameDates() {
 
         for (int i = 0; i < songLength; i++) {
 
             View view = inflater.inflate(R.layout.gridview_item, null);
-            final WordButton button = new WordButton();
-            button.mViewButton = (Button) view.findViewById(R.id.bt_gridview_item);
-            button.mViewButton.setBackgroundResource(R.drawable.game_wordblank);
-            button.mViewButton.setText(button.word);
-            button.mViewButton.setTextColor(Color.WHITE);
+            final WordButton wordButton = new WordButton();
 
-            button.mViewButton.setOnClickListener(new View.OnClickListener() {
+            Button button = (Button) view.findViewById(R.id.bt_gridview_item);
+            wordButton.setmViewButton(button);
+            wordButton.getmViewButton().setBackgroundResource(R.drawable.game_wordblank);
+            wordButton.getmViewButton().setText(wordButton.getWord());
+            wordButton.getmViewButton().setTextColor(Color.WHITE);
+
+            wordButton.getmViewButton().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
-                    button.mViewButton.setText(null);
-                    button.word = null;
+                    wordButton.setWord(null);
+                    wordButton.getmViewButton().setText(null);
 
-                    wordButtonList.get(button.id).mViewButton.setVisibility(View.VISIBLE);
+                    wordButtonList.get(wordButton.getId()).getmViewButton().setVisibility(View.VISIBLE);
+                    wordButtonList.get(wordButton.getId()).setIsvisable(true);
+
                 }
             });
-            wordButtonListName.add(button);
+            wordButtonListName.add(wordButton);
         }
     }
 
     //设置歌曲框
-    private void setNameSeclect() {
+    private void setNameSelect() {
         setMusicNameDates();
-
+        ll_music_name.removeAllViews();
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(100, 100);
 
         for (int i = 0; i < wordButtonListName.size(); i++) {
-            ll_music_name.addView(wordButtonListName.get(i).mViewButton, params);
+            ll_music_name.addView(wordButtonListName.get(i).getmViewButton(), params);
         }
-
     }
 
 
-
-    /*
-    * 当答案错了的时候，文字闪烁，并显示红色
-    * */
-
+    /**
+     * 当答案错了的时候，文字闪烁，并显示红色
+     */
     private void setStateError() {
         Timer timer = new Timer();
 
@@ -378,17 +403,26 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
 
     private boolean isWhite = false;
     private final static int MSG_ERROR = 0x123;
+    private final static int MSG_COIN_TEXT = 0x122;
     private Handler mHandler = new Handler() {
 
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            if (msg.what == MSG_ERROR) {
-                Log.d("tang", "message");
-                for (int i = 0; i < wordButtonListName.size(); i++) {
-                    wordButtonListName.get(i).mViewButton.setTextColor(isWhite ? Color.WHITE : Color.RED);
-                }
+            switch (msg.what) {
+                case MSG_ERROR:
+                    for (int i = 0; i < wordButtonListName.size(); i++) {
+                        wordButtonListName.get(i).getmViewButton().setTextColor(isWhite ? Color.WHITE : Color.RED);
+                    }
+                    break;
+                case MSG_COIN_TEXT:
+                    int current_coin = PreferenceUtil.getInt(Const.COIN_SIZE, 2000) - Const.COIN_TAKE_TIP;
+                    tv_coins.setText(current_coin + "");
+                    PreferenceUtil.put(Const.COIN_SIZE, current_coin);
+                    break;
+
             }
+
         }
     };
 
@@ -399,16 +433,16 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
      */
     private char getRandomChar() {
         String str = "";
-        int hightPos;
+        int highPos;
         int lowPos;
 
         Random random = new Random();
 
-        hightPos = (176 + Math.abs(random.nextInt(39)));
+        highPos = (176 + Math.abs(random.nextInt(39)));
         lowPos = (161 + Math.abs(random.nextInt(93)));
 
         byte[] b = new byte[2];
-        b[0] = (Integer.valueOf(hightPos)).byteValue();
+        b[0] = (Integer.valueOf(highPos)).byteValue();
         b[1] = (Integer.valueOf(lowPos)).byteValue();
 
         try {
@@ -429,7 +463,7 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
     private String[] generateWords() {
         Random random = new Random();
 
-        String[] words = new String[MyGridView.COUNTS_WORDS];
+        String[] words = new String[Const.TOTAL_WORD_SIZE];
 
         // 存入歌名
         for (int i = 0; i < songLength; i++) {
@@ -438,14 +472,14 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
 
         // 获取随机文字并存入数组
         for (int i = songLength;
-             i < MyGridView.COUNTS_WORDS; i++) {
+             i < Const.TOTAL_WORD_SIZE; i++) {
             words[i] = getRandomChar() + "";
         }
 
         // 打乱文字顺序：首先从所有元素中随机选取一个与第一个元素进行交换，
         // 然后在第二个之后选择一个元素与第二个交换，知道最后一个元素。
         // 这样能够确保每个元素在每个位置的概率都是1/n。
-        for (int i = MyGridView.COUNTS_WORDS - 1; i >= 0; i--) {
+        for (int i = Const.TOTAL_WORD_SIZE - 1; i >= 0; i--) {
             int index = random.nextInt(i + 1);
 
             String buf = words[index];
@@ -461,7 +495,7 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
     private int getMusicState() {
 
         for (int i = 0; i < songLength; i++) {
-            if (wordButtonListName.get(i).word == null) {
+            if (wordButtonListName.get(i).getWord() == null) {
                 return MUSIC_STATE_BUG;
             }
         }
@@ -469,7 +503,7 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
         int j = 0;
         for (int i = 0; i < songLength; i++) {
 
-            if (wordButtonListName.get(i).word.equals(currentSong.substring(i, i + 1))) {
+            if (wordButtonListName.get(i).getWord().equals(currentSong.substring(i, i + 1))) {
                 j++;
             }
         }
@@ -482,24 +516,27 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
     public void OnButtonClickLister(WordButton wordButton) {
 
         for (int i = 0; i < songLength; i++) {
-            if (wordButtonListName.get(i).word == null) {
-                wordButtonListName.get(i).mViewButton.setVisibility(View.VISIBLE);
-                wordButtonListName.get(i).word = wordButton.word;
-                wordButtonListName.get(i).mViewButton.setText(wordButton.word);
-                wordButtonListName.get(i).id = wordButton.id;
+            if (wordButtonListName.get(i).getWord() == null) {
 
-                wordButton.mViewButton.setVisibility(View.INVISIBLE);
-                wordButton.isvisable = false;
+                wordButtonListName.get(i).getmViewButton().setVisibility(View.VISIBLE);
+                wordButtonListName.get(i).getmViewButton().setText(wordButton.getWord());
+                wordButtonListName.get(i).setId(wordButton.getId());
+                wordButtonListName.get(i).setWord(wordButton.getWord());
+
+
+                wordButton.getmViewButton().setVisibility(View.INVISIBLE);
+                wordButton.setIsvisable(false);
 
                 break;
             }
         }
 
+        adapter.notifyDataSetChanged();
+
         switch (getMusicState()) {
             case MUSIC_STATE_BUG:
-
                 for (int i = 0; i < wordButtonListName.size(); i++) {
-                    wordButtonListName.get(i).mViewButton.setTextColor(Color.WHITE);
+                    wordButtonListName.get(i).getmViewButton().setTextColor(Color.WHITE);
                 }
                 break;
             case MUSIC_STATE_RIGHT:
@@ -510,6 +547,5 @@ public class MainActivity extends AppCompatActivity implements IbuttonListenr {
                 setStateError();
                 break;
         }
-
     }
 }

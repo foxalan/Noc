@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <com.example.alan.views.MyGridView
+    <GridView
         android:id="@+id/mygridview"
         android:layout_width="match_parent"
         android:layout_height="300dp"
@@ -29,5 +29,5 @@
         android:numColumns="8"
         android:verticalSpacing="2dp" >
         >
-    </com.example.alan.views.MyGridView>
+    </GridView>
 </LinearLayout>
