@@ -9,7 +9,7 @@ import android.widget.Button;
 public class WordButton {
 
     private boolean isvisable;
-    private String word;
+    private String word = "";
     private int id;
     private Button mViewButton;
 

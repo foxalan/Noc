@@ -76,16 +76,10 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
     private final static int MUSIC_STATE_ERROR = 2;
     private final static int MUSIC_STATE_BUG = 3;
 
-    private final static String COIN_SIZE = "coin_size";
-    private final static String PASS_SIZE = "pass_size";
-    private final static String COINS = "coins";
-    private final static String PASSES = "passes";
-
     @BindView(R.id.tv_coins)
     TextView tv_coins;
     @BindView(R.id.tv_passes)
     TextView tv_passes;
-
     @BindView(R.id.ib_remove_error)
     ImageButton ib_remove_error;
     @BindView(R.id.ib_get_tip)
@@ -94,8 +88,6 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
     ImageButton ib_share;
 
     private int coin_number = 2000;
-
-
     private List<Integer> music_id = new ArrayList<>();
     private List<Integer> tip_id = new ArrayList<>();
 
@@ -144,6 +136,19 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
             button.setIsvisable(true);
             button.setWord(word[i]);
             wordButtonList.add(button);
+        }
+
+        music_id.clear();
+
+        for (int j = 0; j < songLength; j++) {
+
+            for (int i = 0; i < 24; i++) {
+                if (wordButtonList.get(i).getWord().equals(currentSong.substring(j, j + 1))) {
+                    music_id.add(i);
+                    Log.e(TAG, "initData: " +i );
+                }
+            }
+
         }
 
 
@@ -231,19 +236,46 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
      */
     private void set_correct_answer() {
 
+        boolean isCanSet = false;
+
+
+        if (wordButtonListName.size() == 0) {
+            isCanSet = true;
+        } else {
+            for (WordButton wordButton : wordButtonListName) {
+                if (wordButton.getWord().equals("")) {
+                    Log.e(TAG, "set_correct_answer: " + wordButton.getWord());
+                    isCanSet = true;
+                    break;
+
+                }
+            }
+        }
+
+        if (isCanSet) {
+            for (int i = 0; i < wordButtonListName.size(); i++) {
+                if (wordButtonListName.get(i).getWord().equals("")) {
+
+                    Log.e(TAG, "set_correct_answer: " + wordButtonList.size() + ":" + music_id.size());
+
+                    wordButtonList.get(music_id.get(i)).getmViewButton().performClick();
+                    Log.e(TAG, "set_correct_answer: "+music_id.get(i) );
+                    break;
+                }
+            }
+        } else {
+
+            return;
+        }
+
+        mHandler.sendEmptyMessage(0x121);
+
+
     }
 
     //判断删除的是正确的歌曲名称和重复
     private boolean judge_isCorrect(int random) {
 
-        music_id.clear();
-        for (int i = 0; i < 24; i++) {
-            for (int j = 0; j < songLength; j++) {
-                if (wordButtonList.get(i).getWord().equals(currentSong.substring(j, j + 1))) {
-                    music_id.add(i);
-                }
-            }
-        }
 
         for (int m = 0; m < music_id.size(); m++) {
             if (random == music_id.get(m)) {
@@ -354,8 +386,8 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
                 @Override
                 public void onClick(View v) {
 
-                    wordButton.setWord(null);
-                    wordButton.getmViewButton().setText(null);
+                    wordButton.setWord("");
+                    wordButton.getmViewButton().setText("");
 
                     wordButtonList.get(wordButton.getId()).getmViewButton().setVisibility(View.VISIBLE);
                     wordButtonList.get(wordButton.getId()).setIsvisable(true);
@@ -408,6 +440,7 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
     private boolean isWhite = false;
     private final static int MSG_ERROR = 0x123;
     private final static int MSG_COIN_TEXT = 0x122;
+    private final static int MSG_COIN_TIP = 0x121;
     private Handler mHandler = new Handler() {
 
         @Override
@@ -420,9 +453,14 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
                     }
                     break;
                 case MSG_COIN_TEXT:
-                    int current_coin = PreferenceUtil.getInt(Const.COIN_SIZE, 2000) - Const.COIN_TAKE_TIP;
+                    int current_coin = PreferenceUtil.getInt(Const.COIN_SIZE, 2000) - Const.COIN_TAKE_ERROR;
                     tv_coins.setText(current_coin + "");
                     PreferenceUtil.put(Const.COIN_SIZE, current_coin);
+                    break;
+                case MSG_COIN_TIP:
+                    int coins = PreferenceUtil.getInt(Const.COIN_SIZE, 2000) - Const.COIN_TAKE_TIP;
+                    tv_coins.setText(coins + "");
+                    PreferenceUtil.put(Const.COIN_SIZE, coins);
                     break;
 
             }
@@ -434,7 +472,7 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
     private int getMusicState() {
 
         for (int i = 0; i < songLength; i++) {
-            if (wordButtonListName.get(i).getWord() == null) {
+            if (wordButtonListName.get(i).getWord().equals("")) {
                 return MUSIC_STATE_BUG;
             }
         }
@@ -454,13 +492,12 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
     public void OnButtonClickLister(WordButton wordButton) {
 
         for (int i = 0; i < songLength; i++) {
-            if (wordButtonListName.get(i).getWord() == null) {
+            if (wordButtonListName.get(i).getWord().equals("")) {
 
                 wordButtonListName.get(i).getmViewButton().setVisibility(View.VISIBLE);
                 wordButtonListName.get(i).getmViewButton().setText(wordButton.getWord());
                 wordButtonListName.get(i).setId(wordButton.getId());
                 wordButtonListName.get(i).setWord(wordButton.getWord());
-
 
                 wordButton.getmViewButton().setVisibility(View.INVISIBLE);
                 wordButton.setIsvisable(false);
