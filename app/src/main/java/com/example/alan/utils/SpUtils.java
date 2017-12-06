@@ -9,29 +9,29 @@ import android.content.SharedPreferences;
 
 public class SpUtils {
 
-    private SharedPreferences sharedPreferences;
-    private SharedPreferences.Editor editor;
+    private static SharedPreferences sharedPreferences;
+    private static SharedPreferences.Editor editor;
 
     public SpUtils(Context context,String string){
         sharedPreferences =context.getSharedPreferences(string,Context.MODE_PRIVATE) ;
         editor = sharedPreferences.edit();
     }
 
-    public void putString(String key,String value){
+    public static void putString(String key,String value){
         editor.putString(key,value);
     }
 
-    public String getString(String key){
+    public static String getString(String key){
 
         return sharedPreferences.getString(key,null);
     }
 
-    public void putInt(String key,int value){
+    public static void putInt(String key,int value){
         editor.putInt(key,value);
         editor.commit();
     }
 
-    public int getInt(String key){
+    public static int getInt(String key){
         return sharedPreferences.getInt(key,2000);
     }
 

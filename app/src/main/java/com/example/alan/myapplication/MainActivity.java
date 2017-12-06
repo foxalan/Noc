@@ -23,7 +23,7 @@ import android.widget.Toast;
 import com.example.alan.beans.Const;
 import com.example.alan.model.IbuttonListenr;
 import com.example.alan.model.WordButton;
-import com.example.alan.utils.SpUtils;
+import com.example.alan.utils.PreferenceUtil;
 import com.example.alan.views.MyGridView;
 
 import java.io.UnsupportedEncodingException;
@@ -35,10 +35,11 @@ import java.util.TimerTask;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements IbuttonListenr {
     //关于游戏的动画设置
     private Animation mPanelAnim;
     private Animation mGamePinSetAnim;
@@ -65,7 +66,7 @@ public class MainActivity extends AppCompatActivity{
 
     private LayoutInflater inflater;
 
-    private int currentSongItem = 1;
+    private int currentSongPosition;
     private int songLength;
     private String currentSong;
 
@@ -75,8 +76,6 @@ public class MainActivity extends AppCompatActivity{
     private final static int MUSIC_STATE_ERROR = 2;
     private final static int MUSIC_STATE_BUG = 3;
 
-    private SpUtils sp_coin_size;
-    private SpUtils sp_pass_size;
 
     private final static String COIN_SIZE = "coin_size";
     private final static String PASS_SIZE = "pass_size";
@@ -96,8 +95,8 @@ public class MainActivity extends AppCompatActivity{
     ImageButton ib_share;
 
     private int coin_number = 2000;
-    private int coin_error = 90;
-    private int coin_tip = 30;
+    private int coin_error = 30;
+    private int coin_tip = 90;
 
     private List<Integer> music_id = new ArrayList<>();
     private List<Integer> tip_id = new ArrayList<>();
@@ -113,18 +112,24 @@ public class MainActivity extends AppCompatActivity{
 
         setContentView(R.layout.activity_main);
         inflater = LayoutInflater.from(this);
-
         unbinder = ButterKnife.bind(this);
 
-        songLength = Const.SONG_INFO[++currentSongItem][1].length();
-        currentSong = Const.SONG_INFO[currentSongItem++][1];
-        sp_coin_size = new SpUtils(this, COIN_SIZE);
-
-
+        initData();
         initAnimations();
         initEvents();
         setGridView();
         setNameSeclect();
+    }
+
+    //初始化数据
+    private void initData() {
+
+        currentSongPosition = PreferenceUtil.getInt(Const.CURRENT_SONG_POSITION, 0);
+
+        songLength = Const.SONG_INFO[currentSongPosition][1].length();
+        currentSong = Const.SONG_INFO[currentSongPosition][1];
+
+        coin_number = PreferenceUtil.getInt(Const.COIN_SIZE,2000);
     }
 
     @Override
@@ -133,47 +138,23 @@ public class MainActivity extends AppCompatActivity{
         unbinder.unbind();
     }
 
-    private void initEvents() {
+    @OnClick({R.id.ib_share, R.id.ib_get_tip, R.id.ib_remove_error, R.id.ib_game_start
+    })
+    void onClick(View view) {
 
-        gridView.resigterButtonLister(new IbuttonListenr() {
-            @Override
-            public void OnButtonClickLister(WordButton wordButton) {
-                for (int i = 0; i < songLength; i++) {
-                    if (wordButtonListName.get(i).word == null) {
-                        wordButtonListName.get(i).mViewButton.setVisibility(View.VISIBLE);
-                        wordButtonListName.get(i).word = wordButton.word;
-                        wordButtonListName.get(i).mViewButton.setText(wordButton.word);
-                        wordButtonListName.get(i).id = wordButton.id;
+        switch (view.getId()) {
+            case R.id.ib_share:
 
-                        wordButton.mViewButton.setVisibility(View.INVISIBLE);
-                        wordButton.isvisable = false;
+                break;
+            case R.id.ib_get_tip:
 
-                        break;
-                    }
-                }
+                break;
+            case R.id.ib_remove_error:
 
-                switch (getMusicState()) {
-                    case MUSIC_STATE_BUG:
+                remove_error_select();
+                break;
+            case R.id.ib_game_start:
 
-                        for (int i = 0; i < wordButtonListName.size(); i++) {
-                            wordButtonListName.get(i).mViewButton.setTextColor(Color.WHITE);
-                        }
-                        break;
-                    case MUSIC_STATE_RIGHT:
-                        Toast.makeText(MainActivity.this, "right", Toast.LENGTH_LONG).show();
-
-                        break;
-                    case MUSIC_STATE_ERROR:
-                        setStateError();
-                        break;
-                }
-
-            }
-        });
-
-        ib_game_start.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
                 if (iv_game_pin == null) {
                     return;
                 }
@@ -182,26 +163,25 @@ public class MainActivity extends AppCompatActivity{
                     isrunning = true;
                     ib_game_start.setVisibility(View.INVISIBLE);
                 }
-            }
-        });
+                break;
+        }
 
-        ib_get_tip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                remove_error_select();
-            }
-        });
+    }
 
-        tv_coins.setText(sp_coin_size.getInt(COINS) + "");
+    private void initEvents() {
+
+        gridView.resigterButtonLister(this);
+
+        tv_coins.setText(coin_number+"");
     }
 
     private void remove_error_select() {
-        coin_number = sp_coin_size.getInt(COINS);
+
+//        coin_number = sp_coin_size.getInt(COINS);
+//        sp_coin_size.putInt(COINS, coin_number -= coin_tip);
+//        tv_coins.setText(sp_coin_size.getInt(COINS) + "");
+
         Random random = new Random();
-
-        sp_coin_size.putInt(COINS, coin_number -= coin_tip);
-        tv_coins.setText(sp_coin_size.getInt(COINS) + "");
-
         int error_select = random.nextInt(23);
         while (!judg_iscrrort(error_select)) {
             error_select = random.nextInt(23);
@@ -498,4 +478,38 @@ public class MainActivity extends AppCompatActivity{
         return j == songLength ? MUSIC_STATE_RIGHT : MUSIC_STATE_ERROR;
     }
 
+    @Override
+    public void OnButtonClickLister(WordButton wordButton) {
+
+        for (int i = 0; i < songLength; i++) {
+            if (wordButtonListName.get(i).word == null) {
+                wordButtonListName.get(i).mViewButton.setVisibility(View.VISIBLE);
+                wordButtonListName.get(i).word = wordButton.word;
+                wordButtonListName.get(i).mViewButton.setText(wordButton.word);
+                wordButtonListName.get(i).id = wordButton.id;
+
+                wordButton.mViewButton.setVisibility(View.INVISIBLE);
+                wordButton.isvisable = false;
+
+                break;
+            }
+        }
+
+        switch (getMusicState()) {
+            case MUSIC_STATE_BUG:
+
+                for (int i = 0; i < wordButtonListName.size(); i++) {
+                    wordButtonListName.get(i).mViewButton.setTextColor(Color.WHITE);
+                }
+                break;
+            case MUSIC_STATE_RIGHT:
+                Toast.makeText(MainActivity.this, "right", Toast.LENGTH_LONG).show();
+
+                break;
+            case MUSIC_STATE_ERROR:
+                setStateError();
+                break;
+        }
+
+    }
 }
