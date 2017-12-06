@@ -20,6 +20,7 @@
         android:layout_height="wrap_content" />
 
     <GridView
+        android:layoutAnimation="@anim/layout_anim"
         android:id="@+id/mygridview"
         android:layout_width="match_parent"
         android:layout_height="300dp"

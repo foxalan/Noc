@@ -26,8 +26,8 @@ import com.example.alan.model.IButtonListener;
 import com.example.alan.model.WordButton;
 import com.example.alan.utils.PreferenceUtil;
 import com.example.alan.views.MyGridViewAdapter;
+import com.example.alan.views.RandomStringUtil;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
 
         coin_number = PreferenceUtil.getInt(Const.COIN_SIZE, Const.COIN_NUMBER);
 
-        String[] word = generateWords();
+        String[] word = RandomStringUtil.generateWords(currentSong, songLength);
         for (int i = 0; i < Const.TOTAL_WORD_SIZE; i++) {
             WordButton button = new WordButton();
             button.setId(i);
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
 
                 break;
             case R.id.ib_get_tip:
-
+                set_correct_answer();
                 break;
             case R.id.ib_remove_error:
 
@@ -185,9 +185,10 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
 
     }
 
+
     private void initEvents() {
 
-        adapter = new MyGridViewAdapter(this,wordButtonList,R.layout.gridview_item);
+        adapter = new MyGridViewAdapter(this, wordButtonList, R.layout.gridview_item);
         gridView.setAdapter(adapter);
         adapter.registerButtonListener(this);
         tv_coins.setText(coin_number + "");
@@ -202,13 +203,13 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
      */
     private void remove_error_select() {
 
-        if (PreferenceUtil.getInt(Const.COIN_SIZE,2000)<Const.COIN_TAKE_ERROR){
-            Toast.makeText(this,"金币不足",Toast.LENGTH_LONG).show();
+        if (PreferenceUtil.getInt(Const.COIN_SIZE, 2000) < Const.COIN_TAKE_ERROR) {
+            Toast.makeText(this, "金币不足", Toast.LENGTH_LONG).show();
             return;
         }
 
         if ((tip_id.size() + music_id.size()) == 20) {
-            Toast.makeText(this,"不能再去掉错误的答案了",Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "不能再去掉错误的答案了", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -223,6 +224,13 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
 
         wordButtonList.get(error_select).getmViewButton().setVisibility(View.INVISIBLE);
         wordButtonList.get(error_select).getmViewButton().setEnabled(false);
+    }
+
+    /**
+     * 设置一个正确的答案
+     */
+    private void set_correct_answer() {
+
     }
 
     //判断删除的是正确的歌曲名称和重复
@@ -320,10 +328,6 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
         });
     }
 
-//    //刷新数据
-//    private void setGridView() {
-//        adapter.notifyDataSetChanged();
-//    }
 
     @Override
     protected void onPause() {
@@ -426,72 +430,7 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
         }
     };
 
-    /**
-     * 生成随机汉字
-     *
-     * @return
-     */
-    private char getRandomChar() {
-        String str = "";
-        int highPos;
-        int lowPos;
-
-        Random random = new Random();
-
-        highPos = (176 + Math.abs(random.nextInt(39)));
-        lowPos = (161 + Math.abs(random.nextInt(93)));
-
-        byte[] b = new byte[2];
-        b[0] = (Integer.valueOf(highPos)).byteValue();
-        b[1] = (Integer.valueOf(lowPos)).byteValue();
-
-        try {
-            str = new String(b, "GBK");
-        } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        return str.charAt(0);
-    }
-
-    /**
-     * 生成所有的待选文字
-     *
-     * @return
-     */
-    private String[] generateWords() {
-        Random random = new Random();
-
-        String[] words = new String[Const.TOTAL_WORD_SIZE];
-
-        // 存入歌名
-        for (int i = 0; i < songLength; i++) {
-            words[i] = currentSong.substring(i, i + 1);
-        }
-
-        // 获取随机文字并存入数组
-        for (int i = songLength;
-             i < Const.TOTAL_WORD_SIZE; i++) {
-            words[i] = getRandomChar() + "";
-        }
-
-        // 打乱文字顺序：首先从所有元素中随机选取一个与第一个元素进行交换，
-        // 然后在第二个之后选择一个元素与第二个交换，知道最后一个元素。
-        // 这样能够确保每个元素在每个位置的概率都是1/n。
-        for (int i = Const.TOTAL_WORD_SIZE - 1; i >= 0; i--) {
-            int index = random.nextInt(i + 1);
-
-            String buf = words[index];
-            words[index] = words[i];
-            words[i] = buf;
-        }
-
-        return words;
-    }
-
     //判断歌曲文字的状态
-
     private int getMusicState() {
 
         for (int i = 0; i < songLength; i++) {
@@ -507,7 +446,6 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
                 j++;
             }
         }
-
 
         return j == songLength ? MUSIC_STATE_RIGHT : MUSIC_STATE_ERROR;
     }
