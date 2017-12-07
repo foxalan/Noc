@@ -1,5 +1,6 @@
 package com.example.alan.myapplication;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -23,6 +25,7 @@ import android.widget.Toast;
 
 import com.example.alan.beans.Const;
 import com.example.alan.model.IButtonListener;
+import com.example.alan.model.IButtonUpdate;
 import com.example.alan.model.WordButton;
 import com.example.alan.utils.PreferenceUtil;
 import com.example.alan.views.CustomDialog;
@@ -41,7 +44,7 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 
 
-public class MainActivity extends AppCompatActivity implements IButtonListener {
+public class MainActivity extends AppCompatActivity implements IButtonListener, IButtonUpdate {
     //关于游戏的动画设置
     private Animation mPanelAnim;
     private Animation mGamePinSetAnim;
@@ -96,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
 
     private MyGridViewAdapter adapter;
 
+    private CustomDialog customDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,7 +112,9 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
         inflater = LayoutInflater.from(this);
         unbinder = ButterKnife.bind(this);
 
-        CustomDialog.createRightDialog(this);
+        customDialog = new CustomDialog(this);
+        customDialog.setiButtonUpdate(this);
+        customDialog.createRightDialog(this);
 
         initData();
         initAnimations();
@@ -148,13 +155,11 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
             for (int i = 0; i < 24; i++) {
                 if (wordButtonList.get(i).getWord().equals(currentSong.substring(j, j + 1))) {
                     music_id.add(i);
-                    Log.e(TAG, "initData: " +i );
+                    Log.e(TAG, "initData: " + i);
                 }
             }
 
         }
-
-
     }
 
     @Override
@@ -237,8 +242,8 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
      */
     private void set_correct_answer() {
 
-        if (PreferenceUtil.getInt(Const.COIN_SIZE,2000)<Const.COIN_TAKE_TIP){
-            Toast.makeText(this,"金币不足",Toast.LENGTH_LONG).show();
+        if (PreferenceUtil.getInt(Const.COIN_SIZE, 2000) < Const.COIN_TAKE_TIP) {
+            Toast.makeText(this, "金币不足", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -264,12 +269,12 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
                     Log.e(TAG, "set_correct_answer: " + wordButtonList.size() + ":" + music_id.size());
 
                     wordButtonList.get(music_id.get(i)).getmViewButton().performClick();
-                    Log.e(TAG, "set_correct_answer: "+music_id.get(i) );
+                    Log.e(TAG, "set_correct_answer: " + music_id.get(i));
                     break;
                 }
             }
         } else {
-            Toast.makeText(this,"请先清除错误答案",Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "请先清除错误答案", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -410,6 +415,11 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(100, 100);
 
         for (int i = 0; i < wordButtonListName.size(); i++) {
+            ViewGroup viewGroup = (ViewGroup) wordButtonListName.get(i).getmViewButton().getParent();
+            if (viewGroup != null) {
+
+                viewGroup.removeView(wordButtonListName.get(i).getmViewButton());
+            }
             ll_music_name.addView(wordButtonListName.get(i).getmViewButton(), params);
         }
     }
@@ -446,7 +456,8 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
     private final static int MSG_ERROR = 0x123;
     private final static int MSG_COIN_TEXT = 0x122;
     private final static int MSG_COIN_TIP = 0x121;
-    private Handler mHandler = new Handler() {
+    private final static int MSG_UPDATE = 0x120;
+    public Handler mHandler = new Handler() {
 
         @Override
         public void handleMessage(Message msg) {
@@ -467,11 +478,23 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
                     tv_coins.setText(coins + "");
                     PreferenceUtil.put(Const.COIN_SIZE, coins);
                     break;
+                case MSG_UPDATE:
+                    update();
+                    break;
 
             }
 
         }
     };
+
+//    //更新应用
+//    private  void update() {
+//       finish();
+//       Intent intent = new Intent(MainActivity.this,MainActivity.class);
+//       startActivity(intent);
+//
+//
+//    }
 
     //判断歌曲文字的状态
     private int getMusicState() {
@@ -525,11 +548,20 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
                     wordButtonListName.get(i).getmViewButton().setTextColor(Color.WHITE);
                 }
                 Toast.makeText(MainActivity.this, "right", Toast.LENGTH_LONG).show();
-                CustomDialog.showRightDialog();
+//                CustomDialog.showRightDialog();
+                customDialog.showRightDialog();
                 break;
             case MUSIC_STATE_ERROR:
                 setStateError();
                 break;
         }
+    }
+
+    @Override
+    public void update() {
+        finish();
+        Intent intent = new Intent(MainActivity.this, MainActivity.class);
+        startActivity(intent);
+        overridePendingTransition(R.anim.enter_anim,R.anim.exit_anim);
     }
 }

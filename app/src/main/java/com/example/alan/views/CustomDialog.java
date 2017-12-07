@@ -3,13 +3,17 @@ package com.example.alan.views;
 import android.app.Dialog;
 import android.content.Context;
 import android.view.Display;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.example.alan.beans.Const;
+import com.example.alan.model.IButtonUpdate;
 import com.example.alan.myapplication.R;
+import com.example.alan.utils.PreferenceUtil;
 
 /**
  * Created by alan on 2017/3/29.
@@ -17,11 +21,21 @@ import com.example.alan.myapplication.R;
 
 public class CustomDialog extends Dialog {
 
-    public static CustomDialog answerRightDialog;
-    public static TextView tv_current_position;
-    public static TextView tv_current_song_name;
-    public static ImageButton bt_next_game;
-    public static ImageButton ib_share;
+    private IButtonUpdate iButtonUpdate;
+
+    public IButtonUpdate getiButtonUpdate() {
+        return iButtonUpdate;
+    }
+
+    public void setiButtonUpdate(IButtonUpdate iButtonUpdate) {
+        this.iButtonUpdate = iButtonUpdate;
+    }
+
+    public CustomDialog answerRightDialog;
+    public TextView tv_current_position;
+    public TextView tv_current_song_name;
+    public ImageButton bt_next_game;
+    public ImageButton ib_share;
 
 
     public CustomDialog(Context context) {
@@ -33,7 +47,7 @@ public class CustomDialog extends Dialog {
         super(context, themeResId);
     }
 
-    public static void createRightDialog(Context context) {
+    public void createRightDialog(Context context) {
 
         answerRightDialog = new CustomDialog(context, R.style.MyDialog);
         answerRightDialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -46,9 +60,19 @@ public class CustomDialog extends Dialog {
         ib_share = (ImageButton) answerRightDialog.findViewById(R.id.ib_share);
 
 
+        bt_next_game.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int position = PreferenceUtil.getInt(Const.CURRENT_SONG_POSITION, 0) + 1;
+                PreferenceUtil.put(Const.CURRENT_SONG_POSITION, position);
+
+                iButtonUpdate.update();
+
+            }
+        });
+
+
         Window window = answerRightDialog.getWindow();
-
-
         Display display = window.getWindowManager().getDefaultDisplay();
         int width = display.getWidth();
         int height = display.getHeight();
@@ -62,15 +86,24 @@ public class CustomDialog extends Dialog {
 
     }
 
-    public static void showRightDialog() {
+    public void showRightDialog() {
+
+        hideRightDialog();
+
         if (answerRightDialog != null) {
+            int position = PreferenceUtil.getInt(Const.CURRENT_SONG_POSITION, 0);
+
+            tv_current_position.setText("" + position);
+            tv_current_song_name.setText(Const.SONG_INFO[position][1] + "");
+
+
             answerRightDialog.show();
         }
     }
 
-    public static void hideRightDialog() {
+    public  void hideRightDialog() {
         if (answerRightDialog != null) {
-            answerRightDialog.hide();
+            answerRightDialog.dismiss();
         }
     }
 
