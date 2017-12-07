@@ -160,8 +160,7 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
         unbinder.unbind();
     }
 
-    @OnClick({R.id.ib_share, R.id.ib_get_tip, R.id.ib_remove_error, R.id.ib_game_start
-    })
+    @OnClick({R.id.ib_share, R.id.ib_get_tip, R.id.ib_remove_error, R.id.ib_game_start})
     void onClick(View view) {
 
         switch (view.getId()) {
@@ -172,7 +171,6 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
                 set_correct_answer();
                 break;
             case R.id.ib_remove_error:
-
                 remove_error_select();
                 break;
             case R.id.ib_game_start:
@@ -236,8 +234,12 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
      */
     private void set_correct_answer() {
 
-        boolean isCanSet = false;
+        if (PreferenceUtil.getInt(Const.COIN_SIZE,2000)<Const.COIN_TAKE_TIP){
+            Toast.makeText(this,"金币不足",Toast.LENGTH_LONG).show();
+            return;
+        }
 
+        boolean isCanSet = false;
 
         if (wordButtonListName.size() == 0) {
             isCanSet = true;
@@ -264,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
                 }
             }
         } else {
-
+            Toast.makeText(this,"请先清除错误答案",Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -515,8 +517,11 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
                 }
                 break;
             case MUSIC_STATE_RIGHT:
-                Toast.makeText(MainActivity.this, "right", Toast.LENGTH_LONG).show();
 
+                for (int i = 0; i < wordButtonListName.size(); i++) {
+                    wordButtonListName.get(i).getmViewButton().setTextColor(Color.WHITE);
+                }
+                Toast.makeText(MainActivity.this, "right", Toast.LENGTH_LONG).show();
                 break;
             case MUSIC_STATE_ERROR:
                 setStateError();
