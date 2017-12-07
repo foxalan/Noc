@@ -25,6 +25,7 @@ import com.example.alan.beans.Const;
 import com.example.alan.model.IButtonListener;
 import com.example.alan.model.WordButton;
 import com.example.alan.utils.PreferenceUtil;
+import com.example.alan.views.CustomDialog;
 import com.example.alan.views.MyGridViewAdapter;
 import com.example.alan.views.RandomStringUtil;
 
@@ -105,6 +106,8 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
         setContentView(R.layout.activity_main);
         inflater = LayoutInflater.from(this);
         unbinder = ButterKnife.bind(this);
+
+        CustomDialog.createRightDialog(this);
 
         initData();
         initAnimations();
@@ -522,6 +525,7 @@ public class MainActivity extends AppCompatActivity implements IButtonListener {
                     wordButtonListName.get(i).getmViewButton().setTextColor(Color.WHITE);
                 }
                 Toast.makeText(MainActivity.this, "right", Toast.LENGTH_LONG).show();
+                CustomDialog.showRightDialog();
                 break;
             case MUSIC_STATE_ERROR:
                 setStateError();
